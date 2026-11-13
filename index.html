@@ -18,6 +18,13 @@
       background: transparent;
       padding: .5em;
       font-size: 1rem;
+      grid-column: span 2;
+    }
+
+    .product img {
+      object-fit: contain;
+      height: auto;
+      width: 100%;
     }
   </style>
   <script src="./src/index.ts" type="module" defer></script>
@@ -39,7 +46,10 @@
 
 <template id="product-tpl">
   <article class="product">
+    <img data-slot="image" width="450" height="225" decoding="async" loading="lazy">
     <h3 data-slot="name"></h3>
+    <p data-slot="price"></p>
+    <p data-slot="category"></p>
     <div data-slot="desc"></div>
     <button type="button" class="js-add-to-cart">
       Add to cart
