@@ -1,7 +1,17 @@
 {
   "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist"
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": [
+      "vite/client"
+    ],
+    "strict": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "skipLibCheck": true
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*"
+  ]
 }

@@ -1,0 +1,2 @@
+type HttpsUrl = `https://${string}`;
+
