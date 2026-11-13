@@ -7,7 +7,12 @@ interface Product {
   images: string[]
 }
 
-interface ProductsResponse {
+interface ProductsResponseInterface {
   products: Product[]
   limit: number
+}
+
+interface ProductsCacheInterface {
+  time: number
+  data: ProductsResponseInterface
 }

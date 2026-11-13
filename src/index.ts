@@ -8,6 +8,10 @@ import {getProducts} from "./api";
     throw new Error("Key elements are missing")
   }
 
+  /**
+   * Create a single product item/card element
+   * @param product
+   */
   const createProductCard = (product: Readonly<Product>): HTMLElement => {
     const fragment = productItemTemplate.content.cloneNode(true) as DocumentFragment;
     const card = fragment.firstElementChild;
@@ -27,7 +31,7 @@ import {getProducts} from "./api";
 
     setText('[data-slot="name"]', product.title);
     setText('[data-slot="desc"]', product.description);
-    setText('[data-slot="price"]', String(product.price));
+    setText('[data-slot="price"]', `$${String(product.price)}`);
     setText('[data-slot="category"]', product.category);
 
     const image = card.querySelector('[data-slot="image"]');
@@ -39,6 +43,9 @@ import {getProducts} from "./api";
     return card;
   };
 
+  /**
+   * Get products data and populate DOM
+   */
   getProducts()
     .then(res => {
       const {products} = res;
