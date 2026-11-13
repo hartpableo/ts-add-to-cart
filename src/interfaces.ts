@@ -16,3 +16,9 @@ interface ProductsCacheInterface {
   time: number
   data: ProductsResponseInterface
 }
+
+interface CartItem {
+  product: Product
+  quantity: number
+  totalPrice: number
+}

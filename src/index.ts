@@ -4,6 +4,7 @@ import {State} from "./State";
 (() => {
   const productsListWrapper = document.getElementById("products-list") as HTMLElement | null
   const productItemTemplate = document.getElementById("product-tpl") as HTMLTemplateElement | null
+  const cartTemplate = document.getElementById("cart-tpl") as HTMLTemplateElement | null
 
   if (!productsListWrapper || !productItemTemplate) {
     throw new Error("Key elements are missing")
