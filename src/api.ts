@@ -1,5 +1,5 @@
 import {API_BASE} from "./configs";
-import {ProductsCache} from "./cache";
+import {ProductsCache} from "./ProductsCache";
 
 export const getProducts = async (): Promise<ProductsResponseInterface> => {
   const cache = new ProductsCache()

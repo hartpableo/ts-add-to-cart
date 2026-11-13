@@ -1,4 +1,5 @@
 import {getProducts} from "./api";
+import {State} from "./State";
 
 (() => {
   const productsListWrapper = document.getElementById("products-list") as HTMLElement | null
@@ -7,6 +8,9 @@ import {getProducts} from "./api";
   if (!productsListWrapper || !productItemTemplate) {
     throw new Error("Key elements are missing")
   }
+
+  // Initialize global state
+  let state = new State()
 
   /**
    * Create a single product item/card element
@@ -49,9 +53,19 @@ import {getProducts} from "./api";
   getProducts()
     .then(res => {
       const {products} = res;
+
+      // Store data into global state
+      state.set("products", products)
+
+      // Populate DOM with products
       products.map(prod => {
         productsListWrapper.appendChild(createProductCard(prod))
       })
     })
     .catch(console.error)
+    .finally(() => {
+      console.log({
+        state: state.all()
+      })
+    })
 })()
