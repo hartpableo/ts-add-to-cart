@@ -1,22 +1,64 @@
 import {getProducts} from "./api";
 import {State} from "./State";
 import type {Product} from "./interfaces";
+import {Cart} from "./Cart";
 
 interface AppState {
   products: Product[];
 }
 
 (() => {
-  const productsListWrapper = document.getElementById("products-list") as HTMLElement | null
-  const productItemTemplate = document.getElementById("product-tpl") as HTMLTemplateElement | null
-  const cartTemplate = document.getElementById("cart-tpl") as HTMLTemplateElement | null
+  const productsListWrapper = document.getElementById("products-list") as HTMLElement|null
+  const productItemTemplate = document.getElementById("product-tpl") as HTMLTemplateElement|null
+  const cartTemplate = document.getElementById("cart-tpl") as HTMLTemplateElement|null
+  const header = document.querySelector("header") as HTMLElement|null
 
-  if (!productsListWrapper || !productItemTemplate) {
+  if (!productsListWrapper || !productItemTemplate || !cartTemplate || !header) {
     throw new Error("Key elements are missing")
   }
 
   // Initialize global state
-  const state = new State<AppState>()
+  let state = new State<AppState>()
+
+  // Initialize cart
+  let cart = new Cart()
+
+  /**
+   * Update cart
+   */
+  const updateCart = (): void => {
+    const initialCartItems = cart.all()
+    if (initialCartItems.length) {
+      header.innerHTML = ''
+      let cartTotalPrice = 0
+      const tpl = cartTemplate.content.cloneNode(true) as DocumentFragment
+      const cartEl = tpl.firstElementChild
+      const cartItemsList = cartEl?.querySelector('[data-slot="items"]')
+      const totalPriceSlot = cartEl?.querySelector('[data-slot="total"]')
+
+      if (!(cartEl instanceof HTMLElement) || !cartItemsList || !totalPriceSlot) {
+        throw new Error("Could not find core elements in cart template");
+      }
+
+      const fragment = document.createDocumentFragment()
+      for (const cartItem of initialCartItems) {
+        const {product: {id, title}, quantity, totalPrice} = cartItem
+        const li = document.createElement("li")
+        li.id = `cart-item-${id}`
+        li.innerHTML = `
+          <span>${title} (${quantity})</span> --- <strong>$${totalPrice.toFixed(2)}</strong>
+        `
+        fragment.appendChild(li)
+        cartTotalPrice += totalPrice
+      }
+
+      totalPriceSlot.textContent = `$${cartTotalPrice.toFixed(2)}`
+      cartItemsList.appendChild(fragment)
+      header.appendChild(cartEl)
+    }
+  }
+
+  updateCart()
 
   /**
    * Create a single product item/card element
@@ -31,6 +73,7 @@ interface AppState {
     }
 
     card.id = String(product.id);
+    card.dataset.metadata = JSON.stringify(product)
 
     const setText = (selector: string, text: string) => {
       const target = card.querySelector(selector);
@@ -69,6 +112,39 @@ interface AppState {
         fragment.appendChild(createProductCard(prod))
       }
       productsListWrapper.appendChild(fragment)
+
+      // Add event listeners to "add to cart" buttons
+      document.addEventListener("click", function (event) {
+        const {target} = event
+        const atcButton = target instanceof Element
+          ? target.closest(".js-add-to-cart") as HTMLButtonElement
+          : null
+        if (atcButton) {
+          const targetProduct = atcButton.closest(".product")
+
+          if (!targetProduct || !(targetProduct instanceof HTMLElement)) {
+            return
+          }
+
+          const rawMetadata = targetProduct.dataset.metadata;
+          if (rawMetadata) {
+            try {
+              atcButton.textContent = "Added to cart"
+              atcButton.disabled = true
+              const metadata = JSON.parse(rawMetadata) as Product;
+              cart.add(metadata);
+            } catch (error) {
+              console.error("Failed to parse product metadata:", error);
+            } finally {
+              updateCart()
+              setTimeout(() => {
+                atcButton.textContent = "Add to cart"
+                atcButton.disabled = false
+              }, 800)
+            }
+          }
+        }
+      })
     })
     .catch(console.error)
     .finally(() => {
