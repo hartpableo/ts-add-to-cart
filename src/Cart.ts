@@ -2,8 +2,13 @@ import type {CartItem, Product} from "./interfaces";
 
 export class Cart {
   #storageKey: string = "ts_cart";
+  #items: CartItem[];
 
-  all(): CartItem[] {
+  constructor() {
+    this.#items = this.#load();
+  }
+
+  #load(): CartItem[] {
     const raw = localStorage.getItem(this.#storageKey);
     if (!raw) return [];
 
@@ -16,33 +21,41 @@ export class Cart {
     }
   }
 
+  all(): CartItem[] {
+    return this.#items;
+  }
+
   add(product: Product): void {
-    const items = this.all();
-    const existing = items.find((item) => item.product.id === product.id);
+    const existing = this.#items.find((item) => item.product.id === product.id);
 
     if (existing) {
       existing.quantity += 1;
       existing.totalPrice = existing.quantity * existing.product.price;
     } else {
-      items.push({
+      this.#items.push({
         product,
         quantity: 1,
         totalPrice: product.price,
       });
     }
 
-    this.#save(items);
+    this.#save();
   }
 
   remove(prodId: Product["id"]): CartItem[] {
-    const filtered = this.all().filter((item) => item.product.id !== prodId);
-    this.#save(filtered);
-    return filtered;
+    this.#items = this.#items.filter((item) => item.product.id !== prodId);
+    this.#save();
+    return this.#items;
   }
 
-  #save(items: CartItem[]): void {
+  empty(): void {
+    this.#items = [];
+    localStorage.removeItem(this.#storageKey);
+  }
+
+  #save(): void {
     try {
-      localStorage.setItem(this.#storageKey, JSON.stringify(items));
+      localStorage.setItem(this.#storageKey, JSON.stringify(this.#items));
     } catch (e) {
       console.error("Failed to write to localStorage:", e);
     }

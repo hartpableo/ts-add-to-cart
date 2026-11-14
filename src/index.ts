@@ -27,35 +27,38 @@ interface AppState {
    * Update cart
    */
   const updateCart = (): void => {
+    header.innerHTML = ''
     const initialCartItems = cart.all()
-    if (initialCartItems.length) {
-      header.innerHTML = ''
-      let cartTotalPrice = 0
-      const tpl = cartTemplate.content.cloneNode(true) as DocumentFragment
-      const cartEl = tpl.firstElementChild
-      const cartItemsList = cartEl?.querySelector('[data-slot="items"]')
-      const totalPriceSlot = cartEl?.querySelector('[data-slot="total"]')
 
-      if (!(cartEl instanceof HTMLElement) || !cartItemsList || !totalPriceSlot) {
-        throw new Error("Could not find core elements in cart template");
-      }
+    if (!initialCartItems.length) {
+      return;
+    }
 
-      const fragment = document.createDocumentFragment()
-      for (const cartItem of initialCartItems) {
-        const {product: {id, title}, quantity, totalPrice} = cartItem
-        const li = document.createElement("li")
-        li.id = `cart-item-${id}`
-        li.innerHTML = `
+    let cartTotalPrice = 0
+    const tpl = cartTemplate.content.cloneNode(true) as DocumentFragment
+    const cartEl = tpl.firstElementChild
+    const cartItemsList = cartEl?.querySelector('[data-slot="items"]')
+    const totalPriceSlot = cartEl?.querySelector('[data-slot="total"]')
+
+    if (!(cartEl instanceof HTMLElement) || !cartItemsList || !totalPriceSlot) {
+      throw new Error("Could not find core elements in cart template");
+    }
+
+    const fragment = document.createDocumentFragment()
+    for (const cartItem of initialCartItems) {
+      const {product: {id, title}, quantity, totalPrice} = cartItem
+      const li = document.createElement("li")
+      li.id = `cart-item-${id}`
+      li.innerHTML = `
           <span>${title} (${quantity})</span> --- <strong>$${totalPrice.toFixed(2)}</strong>
         `
-        fragment.appendChild(li)
-        cartTotalPrice += totalPrice
-      }
-
-      totalPriceSlot.textContent = `$${cartTotalPrice.toFixed(2)}`
-      cartItemsList.appendChild(fragment)
-      header.appendChild(cartEl)
+      fragment.appendChild(li)
+      cartTotalPrice += totalPrice
     }
+
+    totalPriceSlot.textContent = `$${cartTotalPrice.toFixed(2)}`
+    cartItemsList.appendChild(fragment)
+    header.appendChild(cartEl)
   }
 
   updateCart()
@@ -73,7 +76,7 @@ interface AppState {
     }
 
     card.id = String(product.id);
-    card.dataset.metadata = JSON.stringify(product)
+    card.dataset.productId = String(product.id);
 
     const setText = (selector: string, text: string) => {
       const target = card.querySelector(selector);
@@ -126,23 +129,29 @@ interface AppState {
             return
           }
 
-          const rawMetadata = targetProduct.dataset.metadata;
-          if (rawMetadata) {
-            try {
-              atcButton.textContent = "Added to cart"
-              atcButton.disabled = true
-              const metadata = JSON.parse(rawMetadata) as Product;
-              cart.add(metadata);
-            } catch (error) {
-              console.error("Failed to parse product metadata:", error);
-            } finally {
-              updateCart()
-              setTimeout(() => {
-                atcButton.textContent = "Add to cart"
-                atcButton.disabled = false
-              }, 800)
-            }
+          const productId = Number(targetProduct.dataset.productId);
+          const products = state.get("products");
+          const product = products?.find((p) => p.id === productId);
+
+          if (product) {
+            atcButton.textContent = "Added to cart"
+            atcButton.disabled = true
+            cart.add(product);
+            updateCart();
+            setTimeout(() => {
+              atcButton.textContent = "Add to cart"
+              atcButton.disabled = false
+            }, 800);
           }
+        }
+
+        // Remove items
+        const removeCartItemButton = target instanceof Element
+          ? target.closest(".js-remove-items") as HTMLButtonElement
+          : null
+        if (removeCartItemButton) {
+          cart.empty()
+          updateCart()
         }
       })
     })
