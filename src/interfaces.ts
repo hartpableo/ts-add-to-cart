@@ -1,4 +1,4 @@
-interface Product {
+export interface Product {
   id: number
   title: string
   description: string
@@ -7,17 +7,17 @@ interface Product {
   images: string[]
 }
 
-interface ProductsResponseInterface {
+export interface ProductsResponseInterface {
   products: Product[]
   limit: number
 }
 
-interface ProductsCacheInterface {
+export interface ProductsCacheInterface {
   time: number
   data: ProductsResponseInterface
 }
 
-interface CartItem {
+export interface CartItem {
   product: Product
   quantity: number
   totalPrice: number

@@ -1,1 +1,1 @@
-type HttpsUrl = `https://${string}`;
+export type HttpsUrl = `https://${string}`;

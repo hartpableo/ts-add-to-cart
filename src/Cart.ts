@@ -1,3 +1,5 @@
+import type {CartItem, Product} from "./interfaces";
+
 class Cart {
   #items: CartItem[] = []
   #storageKey: string = "ts_cart"

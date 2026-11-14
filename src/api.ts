@@ -1,5 +1,6 @@
 import {API_BASE} from "./configs";
 import {ProductsCache} from "./ProductsCache";
+import type {ProductsResponseInterface} from "./interfaces";
 
 export const getProducts = async (): Promise<ProductsResponseInterface> => {
   const cache = new ProductsCache()
@@ -9,6 +10,11 @@ export const getProducts = async (): Promise<ProductsResponseInterface> => {
     url.searchParams.set("limit", "50")
 
     const response = await fetch(url.toString())
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
+    }
+
     const json = await response.json()
     cache.set(json)
     return json as ProductsResponseInterface

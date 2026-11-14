@@ -1,5 +1,10 @@
 import {getProducts} from "./api";
 import {State} from "./State";
+import type {Product} from "./interfaces";
+
+interface AppState {
+  products: Product[];
+}
 
 (() => {
   const productsListWrapper = document.getElementById("products-list") as HTMLElement | null
@@ -11,7 +16,7 @@ import {State} from "./State";
   }
 
   // Initialize global state
-  let state = new State()
+  const state = new State<AppState>()
 
   /**
    * Create a single product item/card element
@@ -59,9 +64,11 @@ import {State} from "./State";
       state.set("products", products)
 
       // Populate DOM with products
-      products.map(prod => {
-        productsListWrapper.appendChild(createProductCard(prod))
-      })
+      const fragment = document.createDocumentFragment()
+      for (const prod of products) {
+        fragment.appendChild(createProductCard(prod))
+      }
+      productsListWrapper.appendChild(fragment)
     })
     .catch(console.error)
     .finally(() => {

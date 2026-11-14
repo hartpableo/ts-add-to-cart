@@ -1,17 +1,15 @@
-class State {
-  #data: Record<string, any> = {}
+export class State<T extends object> {
+  #data: Partial<T> = {};
 
-  get = (key: string): any => {
-    return this.#data[key] ?? null
+  get<K extends keyof T>(key: K): T[K] | undefined {
+    return this.#data[key];
   }
 
-  set = (key: string, value: any): void => {
-    this.#data[key] = value
+  set<K extends keyof T>(key: K, value: T[K]): void {
+    this.#data[key] = value;
   }
 
-  all = (): Record<string, any> => {
-    return this.#data
+  all(): Readonly<Partial<T>> {
+    return { ...this.#data };
   }
 }
-
-export {State}

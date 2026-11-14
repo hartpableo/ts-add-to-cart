@@ -1,3 +1,5 @@
+import type {ProductsCacheInterface, ProductsResponseInterface} from "./interfaces";
+
 // Cache the products API response for specific duration so we don't flood the API server with requests
 class ProductsCache {
   #cacheKey: string = "ts_products_cache"
@@ -9,14 +11,23 @@ class ProductsCache {
       return null
     }
 
-    return JSON.parse(localStorage.getItem(this.#cacheKey) ?? "")
+    try {
+      return JSON.parse(lsItem) as ProductsCacheInterface
+    } catch {
+      localStorage.removeItem(this.#cacheKey)
+      return null
+    }
   }
 
   set = (data: ProductsResponseInterface): void => {
-    localStorage.setItem(this.#cacheKey, JSON.stringify({
-      data: data,
-      time: Date.now()
-    }))
+    try {
+      localStorage.setItem(this.#cacheKey, JSON.stringify({
+        data: data,
+        time: Date.now()
+      }))
+    } catch (e) {
+      console.error("Failed to write to localStorage:", e)
+    }
   }
 
   isValid = (): boolean => {
